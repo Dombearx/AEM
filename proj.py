@@ -156,13 +156,80 @@ def greedyCyclePath(matrix, firstPoint):
     return path, summaryDistance
 
 
+def greedyRegretCyclePath(matrix, firstPoint):
+    print("firstPoint", firstPoint)
+    path = []
+
+    currentPoint = firstPoint
+
+    usedVertexes = [firstPoint]
+
+    path.append(currentPoint)
+
+    for _ in range(0, math.ceil(len(matrix) / 2) - 1):
+        choosenPoint = None
+        regrets = []
+        allCosts = {}
+        for index, distance in enumerate(matrix[currentPoint]):
+            if(index == currentPoint):
+                continue
+            if(index in usedVertexes):
+                continue
+
+            costs = []
+            for index2, x in enumerate(path[:-1]):
+                y = path[index2 + 1]
+                costs.append(((matrix[x, index] +
+                               matrix[y, index] - matrix[x, y]), index2))
+            costs = sorted(costs, key=lambda x: x[0], reverse=False)
+            allCosts[index] = costs
+            # print(costs)
+            if(len(costs) > 1):
+                regrets.append((costs[1][0] - costs[0][0], index))
+            else:
+                regrets.append((-distance, index))
+
+        regrets = sorted(regrets, key=lambda x: x[0], reverse=True)
+        # print(regrets)
+        choosenPoint = regrets[0][1]
+
+        currentPoint = choosenPoint
+
+        usedVertexes.append(currentPoint)
+
+        insertIndex = allCosts[choosenPoint]
+        if(len(insertIndex) > 0):
+            insertIndex = insertIndex[0]
+            insertIndex = insertIndex[1] + 1
+            #print("insertIndex", insertIndex)
+            path.insert(insertIndex, currentPoint)
+        else:
+            path.append(currentPoint)
+
+    path.append(firstPoint)
+    summaryDistance = calculatePathLength(matrix, path)
+    return path, summaryDistance
+
+
 def calculatePathLength(matrix, path):
     summaryDistance = 0
     previousPoint = path[0]
     for vertex in path[1:]:
         summaryDistance += matrix[previousPoint, vertex]
+        previousPoint = vertex
 
     return summaryDistance
+
+
+def bestGreedyCycleRegretPath(matrix):
+    bestDistnace = None
+    for firstPoint in range(0, len(matrix) - 1):
+        foundPath, foundDistance = greedyRegretCyclePath(matrix, firstPoint)
+        if(bestDistnace == None or foundDistance < bestDistnace):
+            bestDistnace = foundDistance
+            path = foundPath
+
+    return path, bestDistnace
 
 
 def bestGreedyCyclePath(matrix):
@@ -199,8 +266,7 @@ def bestGreedyPath(matrix):
 
 
 if __name__ == "__main__":
-    cords = readCords("./problems/kroB100.tsp")
-    """
+
     cords = [
         (1, 10, 20),
         (2, 10, 22),
@@ -209,9 +275,14 @@ if __name__ == "__main__":
         (5, 14, 22),
         (6, 15, 2),
         (7, 15, 3),
-        (8, 16, 4)
+        (8, 16, 4),
+        (9, 16, 5),
+        (10, 16, 6),
+        (11, 16, 7)
     ]
-    """
+
+    cords = readCords("./problems/kroB100.tsp")
+
     w = h = len(cords)
     matrix = [[0 for x in range(w)] for y in range(h)]
     matrix = np.zeros((w, h), dtype="int32")
@@ -232,9 +303,13 @@ if __name__ == "__main__":
 
     cyclePath, cycleSummaryDistance = bestGreedyCyclePath(matrix)
 
+    cycleRegretPath, cycleRegretSummaryDistance = bestGreedyCycleRegretPath(
+        matrix)
+
     print(path, summaryDistance)
     print(surfacePath, surfaceSummaryDistance)
     print(cyclePath, cycleSummaryDistance)
+    print(cycleRegretPath, cycleRegretSummaryDistance)
 
-    #showPlot(cords, (path, surfacePath, cyclePath))
-    showPlot(cords, (cyclePath,))
+    # showPlot(cords, (path, surfacePath, cyclePath))
+    showPlot(cords, (cycleRegretPath,))
