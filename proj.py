@@ -283,7 +283,7 @@ if __name__ == "__main__":
         (11, 16, 7)
     ]
 
-    cords = readCords("./problems/kroA100.tsp")
+    cords = readCords("./problems/kroB100.tsp")
 
     w = h = len(cords)
     matrix = [[0 for x in range(w)] for y in range(h)]
@@ -315,4 +315,4 @@ if __name__ == "__main__":
 
     # showPlot(cords, (path, surfacePath, cyclePath))
     showPlot(cords, (cycleRegretPath,),
-             "Greedy cycle z żalem, kroA100, distance:" + str(cycleSummaryDistance))
+             "Greedy cycle z żalem, kroB100, distance:" + str(cycleRegretSummaryDistance))
