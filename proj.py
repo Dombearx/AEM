@@ -29,7 +29,7 @@ def calculateDistance(dist1, dist2):
     return round((math.sqrt(distance)))
 
 
-def showPlot(cords, paths):
+def showPlot(cords, paths, title):
     x = [x for (number, x, y) in cords]
     y = [y for (number, x, y) in cords]
     plt.scatter(x, y)
@@ -45,6 +45,8 @@ def showPlot(cords, paths):
             plt.plot([x[previousPoint], x[nextPoint]],
                      [y[previousPoint], y[nextPoint]], color)
             previousPoint = nextPoint
+
+    plt.title(title)
     plt.show()
 
 
@@ -281,7 +283,7 @@ if __name__ == "__main__":
         (11, 16, 7)
     ]
 
-    cords = readCords("./problems/kroB100.tsp")
+    cords = readCords("./problems/kroA100.tsp")
 
     w = h = len(cords)
     matrix = [[0 for x in range(w)] for y in range(h)]
@@ -297,19 +299,20 @@ if __name__ == "__main__":
 
     pp.pprint(matrix)
 
-    path, summaryDistance = bestGreedyPath(matrix)
+    #path, summaryDistance = bestGreedyPath(matrix)
 
-    surfacePath, surfaceSummaryDistance = bestGreedySurfacePath(matrix)
+    #surfacePath, surfaceSummaryDistance = bestGreedySurfacePath(matrix)
 
     cyclePath, cycleSummaryDistance = bestGreedyCyclePath(matrix)
 
     cycleRegretPath, cycleRegretSummaryDistance = bestGreedyCycleRegretPath(
         matrix)
 
-    print(path, summaryDistance)
-    print(surfacePath, surfaceSummaryDistance)
+    #print(path, summaryDistance)
+    #print(surfacePath, surfaceSummaryDistance)
     print(cyclePath, cycleSummaryDistance)
     print(cycleRegretPath, cycleRegretSummaryDistance)
 
     # showPlot(cords, (path, surfacePath, cyclePath))
-    showPlot(cords, (cycleRegretPath,))
+    showPlot(cords, (cycleRegretPath,),
+             "Greedy cycle z żalem, kroA100, distance:" + str(cycleSummaryDistance))
