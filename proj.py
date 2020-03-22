@@ -49,80 +49,131 @@ def showPlot(cords, paths):
 
 
 def greedyPath(matrix, firstPoint):
-    summaryDistance = 0
-    matrix = matrix.copy()
     path = []
+
     currentPoint = firstPoint
 
-    for point in matrix:
-        point[firstPoint] = -1
+    usedVertexes = [firstPoint]
 
     path.append(currentPoint)
+
     for _ in range(0, math.ceil(len(matrix) / 2) - 1):
         bestDistance = None
         choosenPoint = None
+
         for index, distance in enumerate(matrix[currentPoint]):
             if(index == currentPoint):
                 continue
-            if(distance == -1):
+            if(index in usedVertexes):
                 continue
+
             if(bestDistance == None or distance < bestDistance):
                 bestDistance = distance
                 choosenPoint = index
-        summaryDistance += bestDistance
+
         currentPoint = choosenPoint
 
-        for point in matrix:
-            point[currentPoint] = -1
+        usedVertexes.append(currentPoint)
 
         path.append(currentPoint)
 
     path.append(firstPoint)
+    summaryDistance = calculatePathLength(matrix, path)
     return path, summaryDistance
 
 
 def greedySurfacePath(matrix, firstPoint):
-    summaryDistance = 0
-    matrix = matrix.copy()
     path = []
+
     currentPoint = firstPoint
 
-    distancesToFirstPoint = []
-
-    for point in matrix:
-        distancesToFirstPoint.append(point[firstPoint])
-        point[firstPoint] = -1
+    usedVertexes = [firstPoint]
 
     path.append(currentPoint)
+
     for _ in range(0, math.ceil(len(matrix) / 2) - 1):
         bestDistance = None
-
-        tempDistance = None
-
         choosenPoint = None
+
         for index, distance in enumerate(matrix[currentPoint]):
             if(index == currentPoint):
                 continue
-            if(distance == -1):
+            if(index in usedVertexes):
                 continue
 
-            calculateDistance = distance + distancesToFirstPoint[index]
+            calculatedDistance = distance + matrix[index, firstPoint]
 
-            if(bestDistance == None or calculateDistance < bestDistance):
-                bestDistance = calculateDistance
-                tempDistance = distance
+            if(bestDistance == None or calculatedDistance < bestDistance):
+                bestDistance = calculatedDistance
                 choosenPoint = index
 
-        summaryDistance += tempDistance
         currentPoint = choosenPoint
 
-        for point in matrix:
-            point[currentPoint] = -1
+        usedVertexes.append(currentPoint)
 
         path.append(currentPoint)
 
     path.append(firstPoint)
+    summaryDistance = calculatePathLength(matrix, path)
     return path, summaryDistance
+
+
+def greedyCyclePath(matrix, firstPoint):
+    path = []
+
+    currentPoint = firstPoint
+
+    usedVertexes = [firstPoint]
+
+    path.append(currentPoint)
+
+    for _ in range(0, math.ceil(len(matrix) / 2) - 1):
+        bestDistance = None
+        choosenPoint = None
+
+        for index, _ in enumerate(matrix[currentPoint]):
+            if(index == currentPoint):
+                continue
+            if(index in usedVertexes):
+                continue
+
+            calculatedDistance = matrix[firstPoint, index] + \
+                matrix[currentPoint, index] - \
+                matrix[firstPoint, currentPoint]
+
+            if(bestDistance == None or calculatedDistance < bestDistance):
+                bestDistance = calculatedDistance
+                choosenPoint = index
+
+        currentPoint = choosenPoint
+
+        usedVertexes.append(currentPoint)
+
+        path.append(currentPoint)
+
+    path.append(firstPoint)
+    summaryDistance = calculatePathLength(matrix, path)
+    return path, summaryDistance
+
+
+def calculatePathLength(matrix, path):
+    summaryDistance = 0
+    previousPoint = path[0]
+    for vertex in path[1:]:
+        summaryDistance += matrix[previousPoint, vertex]
+
+    return summaryDistance
+
+
+def bestGreedyCyclePath(matrix):
+    bestDistnace = None
+    for firstPoint in range(0, len(matrix) - 1):
+        foundPath, foundDistance = greedyCyclePath(matrix, firstPoint)
+        if(bestDistnace == None or foundDistance < bestDistnace):
+            bestDistnace = foundDistance
+            path = foundPath
+
+    return path, bestDistnace
 
 
 def bestGreedySurfacePath(matrix):
@@ -179,7 +230,11 @@ if __name__ == "__main__":
 
     surfacePath, surfaceSummaryDistance = bestGreedySurfacePath(matrix)
 
+    cyclePath, cycleSummaryDistance = bestGreedyCyclePath(matrix)
+
     print(path, summaryDistance)
     print(surfacePath, surfaceSummaryDistance)
+    print(cyclePath, cycleSummaryDistance)
 
-    showPlot(cords, (path, surfacePath))
+    #showPlot(cords, (path, surfacePath, cyclePath))
+    showPlot(cords, (cyclePath,))
